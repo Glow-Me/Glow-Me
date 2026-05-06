@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NUTRI — 食事記録・栄養分析</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-mark">N</div>
+    <div>
+      <div class="hdr-name">NUTRI</div>
+      <div class="hdr-sub">食事記録 × 栄養分析</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <span class="hdr-date" id="hdr-date"></span>
+    <div class="gender-toggle" id="gender-toggle">
+      <button class="gt active" data-g="male">♂ 男性</button>
+      <button class="gt" data-g="female">♀ 女性</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════ TABS ═══════════════════ -->
+<nav class="tabs">
+  <button class="tab active" data-tab="record">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 1 1 2.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+    記録する
+  </button>
+  <button class="tab" data-tab="history">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-12a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l2.828 2.829a1 1 0 1 0 1.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+    履歴・分析
+    <span class="tab-badge" id="tab-badge"></span>
+  </button>
+</nav>
+
+<!-- ═══════════════════ RECORD PANEL ═══════════════════ -->
+<div class="panel active" id="tab-record">
+
+  <!-- INPUT CARD -->
+  <section class="card" id="card-input">
+    <div class="card-step">STEP 01</div>
+    <h2 class="card-title">食べたものを入力</h2>
+    <p class="card-desc">
+      食品名をスペース・読点・改行で区切って入力してください。<br>
+      <span class="tip-badge">💡 グラム数を書くと精度が上がります</span><br>
+      <span class="eg-row"><span class="eg-k">例：</span><span class="eg-v">鶏むね肉 150g、ご飯 200g、ブロッコリー 80g、卵</span></span>
+    </p>
+
+    <div class="fl-row">
+      <div class="fl-col">
+        <div class="field-label">食事の種類</div>
+        <div class="meal-tabs" id="meal-tabs">
+          <button class="mt active" data-meal="breakfast">🌅 朝食</button>
+          <button class="mt" data-meal="lunch">☀️ 昼食</button>
+          <button class="mt" data-meal="dinner">🌙 夕食</button>
+          <button class="mt" data-meal="snack">🫖 間食</button>
+        </div>
+      </div>
+      <div class="fl-col fl-date">
+        <div class="field-label">日付</div>
+        <input type="date" id="rec-date" class="date-inp"/>
+      </div>
+    </div>
+
+    <div class="field-label" style="margin-top:1rem">食事内容</div>
+    <textarea id="food-text" class="food-textarea"
+      placeholder="ご飯 200g、唐揚げ 3個、豆腐の味噌汁、ブロッコリー 100g、納豆&#10;&#10;Ctrl+Enter で計算できます" rows="4"></textarea>
+
+    <div class="quick-label">▸ よく使う食品をタップして追加</div>
+    <div class="quick-grid" id="quick-grid"></div>
+
+    <button class="btn-calc" id="btn-calc">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      栄養を計算する
+    </button>
+  </section>
+
+  <!-- RESULT CARD -->
+  <section class="card hidden" id="card-result">
+    <div class="card-step">STEP 02</div>
+    <h2 class="card-title">栄養分析結果</h2>
+
+    <div class="sub-hd">認識した食品</div>
+    <div class="rec-foods" id="rec-foods"></div>
+    <div class="unrec-foods hidden" id="unrec-foods"></div>
+
+    <!-- Unknown food search area -->
+    <div class="unknown-area hidden" id="unknown-area">
+      <div class="unknown-hd">
+        <span>🔍 データベース未登録の食品</span>
+        <button class="btn-search-unk" id="btn-search-unk">AIで検索する</button>
+      </div>
+      <div class="unknown-list" id="unknown-list"></div>
+    </div>
+
+    <!-- Calorie hero -->
+    <div class="cal-hero">
+      <div class="cal-hero-l">
+        <div class="cal-num" id="cal-num">0</div>
+        <div class="cal-lbl">kcal / この食事</div>
+      </div>
+      <div class="cal-hero-r">
+        <svg class="cal-ring" viewBox="0 0 80 80">
+          <circle class="cr-bg" cx="40" cy="40" r="34"/>
+          <circle class="cr-fill" id="cal-ring-fill" cx="40" cy="40" r="34"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <div class="cal-ring-pct" id="cal-ring-pct">0%</div>
+      </div>
+    </div>
+
+    <div class="macro-cards" id="macro-cards"></div>
+
+    <div class="sub-hd" style="margin-top:1.5rem">全栄養素（推定値）</div>
+    <div class="nut-rows" id="nut-rows"></div>
+
+    <!-- Daily cumulative -->
+    <div class="daily-cum" id="daily-cum"></div>
+
+    <div class="deficit-box" id="deficit-box"></div>
+    <div class="advice-box" id="advice-box"></div>
+
+    <!-- Affiliate recommendations -->
+    <div class="aff-section hidden" id="aff-section">
+      <div class="aff-hd">
+        <span>🛒 食生活のサポートにおすすめの商品</span>
+        <span class="aff-note">※広告を含みます</span>
+      </div>
+      <div class="aff-cards" id="aff-cards"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-save" id="btn-save">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+        この記録を保存する
+      </button>
+      <button class="btn-back" id="btn-back">← 入力に戻る</button>
+    </div>
+  </section>
+
+  <div class="new-wrap hidden" id="new-wrap">
+    <button class="btn-new" id="btn-new">＋ 新しい食事を記録する</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ HISTORY PANEL ═══════════════════ -->
+<div class="panel" id="tab-history">
+
+  <div class="hist-empty hidden" id="hist-empty">
+    <div class="he-ico">📋</div>
+    <p class="he-t">まだ記録がありません</p>
+    <p class="he-s">食事を記録するとここに表示されます</p>
+  </div>
+
+  <div id="hist-main" class="hidden">
+
+    <!-- Daily Comparison Chart -->
+    <section class="card">
+      <div class="card-step">TODAY</div>
+      <h2 class="card-title">今日の栄養摂取グラフ</h2>
+      <div class="chart-gender-note" id="chart-gender-note"></div>
+      <div class="daily-chart" id="daily-chart"></div>
+      <div class="daily-advice-list" id="daily-advice-list"></div>
+    </section>
+
+    <!-- Yesterday Compare -->
+    <section class="card">
+      <div class="card-step">COMPARE</div>
+      <h2 class="card-title">昨日との比較</h2>
+      <div id="cmp-body"></div>
+    </section>
+
+    <!-- 7-day Trend -->
+    <section class="card">
+      <div class="card-step">TREND</div>
+      <h2 class="card-title">7日間 カロリー推移</h2>
+      <div class="trend-wrap" id="trend-wrap"></div>
+    </section>
+
+    <!-- Chronic Deficit -->
+    <section class="card">
+      <div class="card-step">ANALYSIS</div>
+      <h2 class="card-title">慢性的な栄養不足レポート</h2>
+      <p class="card-desc">直近7日間の平均から分析</p>
+      <div id="chronic-body"></div>
+    </section>
+
+    <!-- History list -->
+    <section class="card">
+      <div class="card-step">HISTORY</div>
+      <h2 class="card-title">食事記録一覧</h2>
+      <div id="hist-list"></div>
+      <button class="btn-clear" id="btn-clear-all">🗑 全記録を削除</button>
+    </section>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ CUSTOM FOOD MODAL ═══════════════════ -->
+<div class="modal-bg hidden" id="custom-modal">
+  <div class="modal">
+    <div class="modal-hd">
+      <span id="custom-modal-title">「○○」の栄養情報を入力</span>
+      <button class="modal-close" id="custom-modal-close">✕</button>
+    </div>
+    <p class="modal-sub">検索でも見つからなかった食品の情報を入力してください。<br>次回から自動で使用されます（端末内に保存）。</p>
+    <div class="custom-form">
+      <input type="text" id="cf-name" placeholder="食品名（例：トリュフリゾット）" class="cf-inp" readonly/>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label>カロリー (kcal)</label>
+          <input type="number" id="cf-cal" placeholder="例：350" class="cf-inp"/>
+        </div>
+        <div class="cf-field">
+          <label>タンパク質 (g)</label>
+          <input type="number" id="cf-prot" placeholder="例：12" class="cf-inp" step="0.1"/>
+        </div>
+      </div>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label>脂質 (g)</label>
+          <input type="number" id="cf-fat" placeholder="例：15" class="cf-inp" step="0.1"/>
+        </div>
+        <div class="cf-field">
+          <label>炭水化物 (g)</label>
+          <input type="number" id="cf-carb" placeholder="例：40" class="cf-inp" step="0.1"/>
+        </div>
+      </div>
+      <div class="cf-field" style="margin-top:.5rem">
+        <label>この量の食品は何g相当ですか？（任意）</label>
+        <input type="number" id="cf-gram" placeholder="例：200（不明な場合は空欄）" class="cf-inp"/>
+      </div>
+      <button class="btn-cf-save" id="btn-cf-save">この食品を登録して計算に追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-bg hidden" id="del-modal">
+  <div class="modal">
+    <p class="modal-t">全データを削除しますか？</p>
+    <p class="modal-sub">この操作は元に戻せません</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="del-cancel">キャンセル</button>
+      <button class="modal-del" id="del-ok">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
