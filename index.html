@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Glow Me — 食事記録・栄養分析</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ══ SETUP MODAL (first visit) ══════════════════════ -->
+<div class="modal-bg" id="setup-modal">
+  <div class="modal setup-modal">
+    <div class="setup-logo">✦ Glow Me</div>
+    <p class="setup-welcome">はじめに、あなたのプロフィールを設定してください</p>
+    <div class="sf-group">
+      <label class="sf-label">お名前（任意）</label>
+      <input type="text" id="s-name" class="sf-inp" placeholder="例：田中 太郎"/>
+    </div>
+    <div class="sf-row">
+      <div class="sf-group">
+        <label class="sf-label">年齢 <span class="sf-req">※必須</span></label>
+        <input type="number" id="s-age" class="sf-inp" placeholder="例：32" min="10" max="100"/>
+      </div>
+      <div class="sf-group">
+        <label class="sf-label">性別</label>
+        <div class="sf-radio-row" id="s-gender">
+          <button class="sf-radio active" data-v="male">♂ 男性</button>
+          <button class="sf-radio" data-v="female">♀ 女性</button>
+        </div>
+      </div>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label">目的</label>
+      <div class="goal-grid" id="s-goal">
+        <button class="goal-btn active" data-v="health">
+          <span class="gb-ico">🥗</span><span class="gb-lbl">健康な食事</span>
+          <span class="gb-sub">バランス重視</span>
+        </button>
+        <button class="goal-btn" data-v="loss">
+          <span class="gb-ico">⬇️</span><span class="gb-lbl">減量</span>
+          <span class="gb-sub">カロリー控えめ</span>
+        </button>
+        <button class="goal-btn" data-v="gain">
+          <span class="gb-ico">⬆️</span><span class="gb-lbl">増量</span>
+          <span class="gb-sub">カロリー多め</span>
+        </button>
+        <button class="goal-btn" data-v="athlete">
+          <span class="gb-ico">⚡</span><span class="gb-lbl">アスリート</span>
+          <span class="gb-sub">高強度サポート</span>
+        </button>
+      </div>
+    </div>
+    <button class="btn-setup-save" id="btn-setup-save">Glow Me をはじめる →</button>
+  </div>
+</div>
+
+<!-- ══ SETTINGS MODAL ══════════════════════════════════ -->
+<div class="modal-bg hidden" id="settings-modal">
+  <div class="modal setup-modal">
+    <div class="modal-hd-row">
+      <span class="modal-ttl">⚙ 設定</span>
+      <button class="modal-x" id="settings-close">✕</button>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label">お名前</label>
+      <input type="text" id="ss-name" class="sf-inp" placeholder="例：田中 太郎"/>
+    </div>
+    <div class="sf-row">
+      <div class="sf-group">
+        <label class="sf-label">年齢</label>
+        <input type="number" id="ss-age" class="sf-inp" min="10" max="100"/>
+      </div>
+      <div class="sf-group">
+        <label class="sf-label">性別</label>
+        <div class="sf-radio-row" id="ss-gender">
+          <button class="sf-radio" data-v="male">♂ 男性</button>
+          <button class="sf-radio" data-v="female">♀ 女性</button>
+        </div>
+      </div>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label">目的</label>
+      <div class="goal-grid" id="ss-goal">
+        <button class="goal-btn" data-v="health"><span class="gb-ico">🥗</span><span class="gb-lbl">健康な食事</span><span class="gb-sub">バランス重視</span></button>
+        <button class="goal-btn" data-v="loss"><span class="gb-ico">⬇️</span><span class="gb-lbl">減量</span><span class="gb-sub">カロリー控えめ</span></button>
+        <button class="goal-btn" data-v="gain"><span class="gb-ico">⬆️</span><span class="gb-lbl">増量</span><span class="gb-sub">カロリー多め</span></button>
+        <button class="goal-btn" data-v="athlete"><span class="gb-ico">⚡</span><span class="gb-lbl">アスリート</span><span class="gb-sub">高強度サポート</span></button>
+      </div>
+    </div>
+    <button class="btn-setup-save" id="btn-settings-save">変更を保存する</button>
+  </div>
+</div>
+
+<!-- ══ DELETE MODAL ════════════════════════════════════ -->
+<div class="modal-bg hidden" id="del-modal">
+  <div class="modal del-modal">
+    <p class="modal-ttl" style="text-align:center;margin-bottom:.4rem">全データを削除しますか？</p>
+    <p class="sf-sub" style="text-align:center;margin-bottom:1.3rem">この操作は元に戻せません</p>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" id="del-cancel">キャンセル</button>
+      <button class="mbtn-del" id="del-ok">削除する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══════════════════════════════════════════ -->
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-mark">G</div>
+    <div>
+      <div class="hdr-name">Glow Me</div>
+      <div class="hdr-sub" id="hdr-sub">食事記録 × 栄養分析</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="goal-badge hidden" id="goal-badge"></div>
+    <span class="hdr-date" id="hdr-date"></span>
+    <button class="hdr-icon-btn" id="btn-open-settings" title="設定">⚙</button>
+  </div>
+</header>
+
+<!-- ══ TABS ════════════════════════════════════════════ -->
+<nav class="tabs">
+  <button class="tab active" data-tab="record">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 1 1 2.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+    記録する
+  </button>
+  <button class="tab" data-tab="history">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-12a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l2.828 2.829a1 1 0 1 0 1.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+    履歴・分析
+    <span class="tab-badge" id="tab-badge"></span>
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     RECORD PANEL
+══════════════════════════════════════════════════════ -->
+<div class="panel active" id="tab-record">
+
+  <!-- INPUT CARD -->
+  <section class="card" id="card-input">
+    <div class="card-step">STEP 01</div>
+    <h2 class="card-title">食べたものを入力</h2>
+    <p class="card-desc">
+      読点<code class="code-mark">、</code>で区切って入力してください。<br>
+      <span class="tip-badge">💡 グラム数や個数を書くと精度が上がります</span><br>
+      <span class="eg-val">例：ご飯、唐揚げ3個、キムチ、ビール2杯、しょうゆ</span>
+    </p>
+
+    <div class="fl-row">
+      <div class="fl-col">
+        <div class="field-label">食事の種類</div>
+        <div class="meal-tabs" id="meal-tabs">
+          <button class="mt active" data-meal="breakfast">🌅 朝食</button>
+          <button class="mt" data-meal="lunch">☀️ 昼食</button>
+          <button class="mt" data-meal="dinner">🌙 夕食</button>
+          <button class="mt" data-meal="snack">🫖 間食</button>
+        </div>
+      </div>
+      <div class="fl-col fl-date">
+        <div class="field-label">日付</div>
+        <input type="date" id="rec-date" class="date-inp"/>
+      </div>
+    </div>
+
+    <div class="field-label" style="margin-top:1rem">食事内容</div>
+    <textarea id="food-text" class="food-textarea"
+      placeholder="ご飯、唐揚げ3個、キムチ、ビール2杯、しょうゆ&#10;&#10;※読点「、」で区切ってください（Ctrl+Enterで計算）" rows="4"></textarea>
+
+    <div class="quick-label">▸ タップして追加</div>
+    <div class="quick-grid" id="quick-grid"></div>
+
+    <button class="btn-calc" id="btn-calc">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      栄養を分析する
+    </button>
+  </section>
+
+  <!-- RESULT CARD -->
+  <section class="card hidden" id="card-result">
+    <div class="card-step">STEP 02</div>
+    <h2 class="card-title">栄養分析結果</h2>
+
+    <div class="sub-hd">認識した食品カテゴリ</div>
+    <div class="rec-foods" id="rec-foods"></div>
+    <div class="unrec-wrap hidden" id="unrec-wrap">
+      <span class="unrec-label">⚠ 未登録食品：</span>
+      <span id="unrec-list"></span>
+    </div>
+
+    <!-- Calorie hero -->
+    <div class="cal-hero">
+      <div class="cal-hero-l">
+        <div class="cal-num" id="cal-num">0</div>
+        <div class="cal-lbl">kcal / この食事</div>
+      </div>
+      <div class="cal-hero-r">
+        <svg class="cal-ring" viewBox="0 0 80 80">
+          <circle class="cr-bg" cx="40" cy="40" r="34"/>
+          <circle class="cr-fill" id="cal-ring-fill" cx="40" cy="40" r="34"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <div class="cal-ring-pct" id="cal-ring-pct">0%</div>
+      </div>
+    </div>
+
+    <!-- Radar Chart -->
+    <div class="sub-hd" style="margin-top:1.2rem">栄養バランス レーダーチャート</div>
+    <div class="radar-wrap">
+      <div id="radar-chart"></div>
+      <div class="radar-legend" id="radar-legend"></div>
+    </div>
+
+    <!-- Macro quick cards -->
+    <div class="macro-cards" id="macro-cards"></div>
+
+    <!-- All nutrients table -->
+    <div class="sub-hd" style="margin-top:1.4rem">全栄養素（推定値）</div>
+    <div class="nut-rows" id="nut-rows"></div>
+
+    <!-- Daily cumulative bar -->
+    <div id="daily-cum"></div>
+
+    <!-- Deficit -->
+    <div class="deficit-box" id="deficit-box"></div>
+    <div class="advice-box" id="advice-box"></div>
+
+    <!-- Affiliates -->
+    <div class="aff-section hidden" id="aff-section">
+      <div class="aff-hd">
+        <span>🛒 食生活のサポートにおすすめ</span>
+        <span class="aff-note">※広告を含みます</span>
+      </div>
+      <div class="aff-cards" id="aff-cards"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-save" id="btn-save">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+        この記録を保存する
+      </button>
+      <button class="btn-back" id="btn-back">← 入力に戻る</button>
+    </div>
+  </section>
+
+  <!-- SUCCESS CARD (after save) -->
+  <section class="card hidden" id="card-success">
+    <div class="success-check">✓</div>
+    <div class="success-msg">記録を保存しました！</div>
+    <div class="success-btns">
+      <button class="btn-continue" id="btn-continue">＋ 続けて記録する</button>
+      <button class="btn-view-hist" id="btn-view-hist">📊 今日の分析を見る</button>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     HISTORY PANEL
+══════════════════════════════════════════════════════ -->
+<div class="panel" id="tab-history">
+
+  <div class="hist-empty hidden" id="hist-empty">
+    <div class="he-ico">✦</div>
+    <p class="he-t">まだ記録がありません</p>
+    <p class="he-s">食事を記録するとここに表示されます</p>
+  </div>
+
+  <div id="hist-main" class="hidden">
+
+    <!-- Today Radar + Bars -->
+    <section class="card">
+      <div class="card-step">TODAY</div>
+      <h2 class="card-title">今日の栄養バランス</h2>
+      <div class="chart-note" id="chart-note"></div>
+      <div class="radar-wrap">
+        <div id="hist-radar"></div>
+        <div class="radar-legend" id="hist-radar-legend"></div>
+      </div>
+      <div class="today-nut-grid" id="today-nut-grid"></div>
+      <div class="daily-advice-list" id="daily-advice-list"></div>
+    </section>
+
+    <!-- Yesterday compare -->
+    <section class="card">
+      <div class="card-step">COMPARE</div>
+      <h2 class="card-title">昨日との比較</h2>
+      <div id="cmp-body"></div>
+    </section>
+
+    <!-- 食事推移 -->
+    <section class="card">
+      <div class="card-step">食事推移</div>
+      <h2 class="card-title">食事履歴</h2>
+      <div class="hist-view-tabs">
+        <button class="hvt active" id="hvt-week">📅 7日間</button>
+        <button class="hvt" id="hvt-month">🗓 月表示</button>
+      </div>
+      <div class="month-nav hidden" id="month-nav">
+        <button class="mn-btn" id="mn-prev">‹</button>
+        <span class="mn-label" id="mn-label"></span>
+        <button class="mn-btn" id="mn-next">›</button>
+      </div>
+      <div id="meal-history-list"></div>
+    </section>
+
+    <!-- Chronic deficit -->
+    <section class="card">
+      <div class="card-step">ANALYSIS</div>
+      <h2 class="card-title">慢性的な栄養不足レポート</h2>
+      <p class="card-desc">直近7日間の平均から分析</p>
+      <div id="chronic-body"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-step">DATA</div>
+      <h2 class="card-title">全記録</h2>
+      <div id="hist-list"></div>
+      <button class="btn-clear" id="btn-clear-all">🗑 全記録を削除</button>
+    </section>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>
